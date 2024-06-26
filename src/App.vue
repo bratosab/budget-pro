@@ -3,24 +3,21 @@ import Header from './components/Header.vue'
 import Balance from './components/Balance.vue'
 import Transactions from './components/Transactions.vue'
 import AddTransaction from './components/AddTransaction.vue'
-import { computed, ref } from 'vue';
+import { onMounted, onUpdated } from 'vue';
+import { useBalance } from './composables/useBalance';
 
-const transactions = ref([]);
-const income = ref(0);
-const expense = ref(0);
+const { transactions, income, expense, balance } = useBalance()
 
-const balance = computed(() => {
-  income.value = 0
-  expense.value = 0
-  return transactions.value.reduce((total, transaction) => {
-    if (transaction.amount > 0) {
-      income.value += transaction.amount
-    } else {
-      expense.value += transaction.amount
-    }
-    return total + transaction.amount;
-  }, 0);
-});
+onMounted(() => {
+  const savedTransactions = JSON.parse(localStorage.getItem('transactions'));
+  if (savedTransactions) {
+    transactions.value = savedTransactions;
+  }
+})
+
+onUpdated(() => {
+  localStorage.setItem('transactions', JSON.stringify(transactions.value));
+})
 
 function handleDeleteTransaction(id) {
   transactions.value = transactions.value.filter(
